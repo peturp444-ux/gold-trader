@@ -178,6 +178,7 @@ Used by traders to improve discipline, risk management and consistency.
 <script>
 
 let trades = JSON.parse(localStorage.getItem("trades")) || [];
+let isPro = localStorage.getItem("pro") === "true";
 const FREE_LIMIT = 10;
 function save(){
 localStorage.setItem("trades",JSON.stringify(trades));
