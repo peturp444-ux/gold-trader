@@ -178,7 +178,7 @@ Used by traders to improve discipline, risk management and consistency.
 <script>
 
 let trades = JSON.parse(localStorage.getItem("trades")) || [];
-
+const FREE_LIMIT = 10;
 function save(){
 localStorage.setItem("trades",JSON.stringify(trades));
 }
@@ -203,7 +203,10 @@ document.getElementById("lotResult").innerHTML =
 }
 
 function addTrade(){
-
+if(trades.length >= FREE_LIMIT){
+    alert("Free limit reached. Unlock Pro to continue.");
+    return;
+}
 let type = document.getElementById("type").value;
 let entry = Number(document.getElementById("entry").value);
 let exit = Number(document.getElementById("exit").value);
