@@ -1,7 +1,7 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
-<title>Gold Trader Assistant</title>
+<title>Trading Performance Tracker</title>
 
 <style>
 body{
@@ -16,6 +16,16 @@ background:#1f2937;
 padding:20px;
 border-radius:15px;
 max-width:700px;
+margin:auto;
+}
+
+h1{
+margin-bottom:5px;
+}
+
+.sub{
+opacity:0.7;
+margin-bottom:15px;
 }
 
 input, select{
@@ -33,35 +43,59 @@ margin-top:10px;
 background:#f59e0b;
 border:none;
 border-radius:8px;
-font-size:18px;
+font-size:16px;
 cursor:pointer;
+font-weight:bold;
+}
+
+a.buy{
+display:block;
+margin:15px 0;
+padding:12px;
+background:#f59e0b;
+color:black;
+text-align:center;
+border-radius:8px;
+font-weight:bold;
+text-decoration:none;
 }
 
 table{
 width:100%;
 margin-top:20px;
 background:#374151;
+border-radius:8px;
+overflow:hidden;
 }
 
 td,th{
 padding:10px;
 border-bottom:1px solid #555;
+text-align:center;
 }
 
 .win{ color:#22c55e; }
 .loss{ color:#ef4444; }
 
 .delete{ background:#dc2626; }
+
+small{
+opacity:0.6;
+}
 </style>
 
 </head>
 
 <body>
 
-<h1>📊 Are You Profitable?</h1> 
-
- <a href="https://peturp.gumroad.com/l/qsvqyf" target="_blank">💰 Buy Pro Version - $9.99</a>
 <div class="box">
+
+<h1>📊 Trading Performance Tracker</h1>
+<p class="sub">Track your trades, win rate and profit factor instantly.</p>
+
+<a class="buy" href="https://peturp.gumroad.com/l/qsvqyf" target="_blank">
+🚀 Unlock Pro Version - $9.99
+</a>
 
 <h2>Risk Calculator</h2>
 
@@ -96,7 +130,7 @@ border-bottom:1px solid #555;
 <th>Type</th>
 <th>Entry</th>
 <th>Exit</th>
-<th>Result ($)</th>
+<th>Result</th>
 <th></th>
 </tr>
 
@@ -105,6 +139,8 @@ border-bottom:1px solid #555;
 
 <h2 id="total"></h2>
 <h3 id="stats"></h3>
+
+<small>Pro users track consistency and improve risk management.</small>
 
 <canvas id="chart" width="700" height="250"></canvas>
 
@@ -126,19 +162,14 @@ let stop = Number(document.getElementById("stop").value);
 let entry = Number(document.getElementById("riskEntry").value);
 
 let money = account * risk / 100;
-
-document.getElementById("riskResult").innerHTML =
-"Risk money: $" + money.toFixed(2);
-
 let distance = Math.abs(entry - stop);
 
+document.getElementById("riskResult").innerHTML =
+"Risk: $" + money.toFixed(2);
+
 if(distance > 0){
-let lot = (money / distance).toFixed(2);
 document.getElementById("lotResult").innerHTML =
-"Lot Size: " + lot;
-}else{
-document.getElementById("lotResult").innerHTML =
-"Invalid Entry/Stop";
+"Lot Size: " + (money / distance).toFixed(2);
 }
 }
 
@@ -150,12 +181,7 @@ let exit = Number(document.getElementById("exit").value);
 
 let result = (type == "BUY") ? (exit - entry) : (entry - exit);
 
-trades.push({
-type,
-entry,
-exit,
-result
-});
+trades.push({type,entry,exit,result});
 
 save();
 showTrades();
@@ -174,10 +200,10 @@ let losses = 0;
 trades.forEach((t,index)=>{
 
 total += t.result;
- 
+
 if(t.result > 0) wins++;
-else if(t.result < 0) losses++;
- 
+else losses++;
+
 let color = t.result >= 0 ? "win" : "loss";
 
 let row = document.createElement("tr");
