@@ -177,121 +177,128 @@ Used by traders to improve discipline, risk management and consistency.
 
 <script>
 
-let trades = JSON.parse(localStorage.getItem("trades")) || [];
+ let trades = JSON.parse(localStorage.getItem("trades")) || [];
 let isPro = localStorage.getItem("pro") === "true";
 const FREE_LIMIT = 10;
+
 function save(){
-localStorage.setItem("trades",JSON.stringify(trades));
+    localStorage.setItem("trades", JSON.stringify(trades));
 }
 
 function calculateRisk(){
 
-let account = Number(document.getElementById("account").value);
-let risk = Number(document.getElementById("risk").value);
-let stop = Number(document.getElementById("stop").value);
-let entry = Number(document.getElementById("riskEntry").value);
+    let account = Number(document.getElementById("account").value);
+    let risk = Number(document.getElementById("risk").value);
+    let stop = Number(document.getElementById("stop").value);
+    let entry = Number(document.getElementById("riskEntry").value);
 
-let money = account * risk / 100;
-let distance = Math.abs(entry - stop);
+    let money = account * risk / 100;
+    let distance = Math.abs(entry - stop);
 
-document.getElementById("riskResult").innerHTML =
-"Risk: $" + money.toFixed(2);
+    document.getElementById("riskResult").innerHTML =
+    "Risk: $" + money.toFixed(2);
 
-if(distance > 0){
-document.getElementById("lotResult").innerHTML =
-"Lot Size: " + (money / distance).toFixed(2);
-}
+    if(distance > 0){
+        document.getElementById("lotResult").innerHTML =
+        "Lot Size: " + (money / distance).toFixed(2);
+    }
 }
 
 function addTrade(){
-if(trades.length >= FREE_LIMIT){
-    alert("Free limit reached. Unlock Pro to continue.");
-    return;
-}
-let type = document.getElementById("type").value;
-let entry = Number(document.getElementById("entry").value);
-let exit = Number(document.getElementById("exit").value);
 
-let result = (type == "BUY") ? (exit - entry) : (entry - exit);
+    if(!isPro && trades.length >= FREE_LIMIT){
+        alert("Free limit reached. Unlock Pro to continue.");
+        return;
+    }
 
-trades.push({type,entry,exit,result});
+    let type = document.getElementById("type").value;
+    let entry = Number(document.getElementById("entry").value);
+    let exit = Number(document.getElementById("exit").value);
 
-save();
-showTrades();
-drawChart();
+    let result = (type == "BUY") ? (exit - entry) : (entry - exit);
+
+    trades.push({
+        type,
+        entry,
+        exit,
+        result
+    });
+
+    save();
+    showTrades();
+    drawChart();
 }
 
 function showTrades(){
 
-let table = document.getElementById("journal");
-table.innerHTML = "";
+    let table = document.getElementById("journal");
+    table.innerHTML = "";
 
-let total = 0;
-let wins = 0;
-let losses = 0;
+    let total = 0;
+    let wins = 0;
+    let losses = 0;
 
-trades.forEach((t,index)=>{
+    trades.forEach((t,index)=>{
 
-total += t.result;
+        total += t.result;
 
-if(t.result > 0) wins++;
-else losses++;
+        if(t.result > 0) wins++;
+        else losses++;
 
-let color = t.result >= 0 ? "win" : "loss";
+        let color = t.result >= 0 ? "win" : "loss";
 
-let row = document.createElement("tr");
+        let row = document.createElement("tr");
 
-row.innerHTML =
-"<td>"+t.type+"</td>"+
-"<td>"+t.entry+"</td>"+
-"<td>"+t.exit+"</td>"+
-"<td class='"+color+"'>"+t.result.toFixed(2)+"</td>";
+        row.innerHTML =
+        "<td>"+t.type+"</td>"+
+        "<td>"+t.entry+"</td>"+
+        "<td>"+t.exit+"</td>"+
+        "<td class='"+color+"'>"+t.result.toFixed(2)+"</td>";
 
-table.appendChild(row);
+        table.appendChild(row);
+    });
 
-});
+    let winrate = trades.length ? (wins/trades.length)*100 : 0;
 
-let winrate = trades.length ? (wins/trades.length)*100 : 0;
+    document.getElementById("total").innerHTML =
+    "Total P/L: " + total.toFixed(2);
 
-document.getElementById("total").innerHTML =
-"Total P/L: " + total.toFixed(2);
-
-document.getElementById("stats").innerHTML =
-"Trades: "+trades.length+
-"<br>Wins: "+wins+
-"<br>Losses: "+losses+
-"<br>Win rate: "+winrate.toFixed(1)+"%";
+    document.getElementById("stats").innerHTML =
+    "Trades: "+trades.length+
+    "<br>Wins: "+wins+
+    "<br>Losses: "+losses+
+    "<br>Win rate: "+winrate.toFixed(1)+"%";
 }
 
 function drawChart(){
 
-let canvas = document.getElementById("chart");
-let ctx = canvas.getContext("2d");
+    let canvas = document.getElementById("chart");
+    let ctx = canvas.getContext("2d");
 
-ctx.clearRect(0,0,700,250);
+    ctx.clearRect(0,0,700,250);
 
-let sum = 0;
-let points = [];
+    let sum = 0;
+    let points = [];
 
-trades.forEach(t=>{
-sum += t.result;
-points.push(sum);
-});
+    trades.forEach(t=>{
+        sum += t.result;
+        points.push(sum);
+    });
 
-ctx.strokeStyle = "#22c55e";
-ctx.beginPath();
+    ctx.strokeStyle = "#22c55e";
+    ctx.beginPath();
 
-points.forEach((p,i)=>{
-let x = i*60 + 40;
-let y = 200 - p;
+    points.forEach((p,i)=>{
+        let x = i*60 + 40;
+        let y = 200 - p;
 
-if(i==0) ctx.moveTo(x,y);
-else ctx.lineTo(x,y);
+        if(i==0) ctx.moveTo(x,y);
+        else ctx.lineTo(x,y);
 
-ctx.arc(x,y,3,0,Math.PI*2);
-});
+        ctx.arc(x,y,3,0,Math.PI*2);
+    });
 
-ctx.stroke();
+    ctx.stroke();
 }
 
 showTrades();
