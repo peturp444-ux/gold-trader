@@ -225,6 +225,7 @@ function addTrade(){
     });
 
     save();
+ 
     showTrades();
     drawChart();
 }
@@ -301,6 +302,17 @@ function drawChart(){
     ctx.stroke();
 }
 
+function unlockPro(){
+    let code = prompt("Enter your Pro code:");
+
+    if(code === "GOLD-2026"){
+        localStorage.setItem("pro","true");
+        isPro = true;
+        alert("Pro unlocked successfully!");
+    } else {
+        alert("Invalid code.");
+    }
+}
 showTrades();
 drawChart();
 
