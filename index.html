@@ -1,31 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Trading Performance Tracker</title>
+<title>Trade Smart Tracker</title>
 
 <style>
 body{
-background:#111827;
+background:#0f172a;
 color:white;
 font-family:Arial;
 padding:30px;
 }
 
 .box{
-background:#1f2937;
-padding:20px;
-border-radius:15px;
-max-width:700px;
+background:#111827;
+padding:25px;
+border-radius:16px;
+max-width:800px;
 margin:auto;
+border:1px solid #1f2937;
 }
 
 h1{
+font-size:28px;
 margin-bottom:5px;
 }
 
 .sub{
 opacity:0.7;
+margin-bottom:20px;
+}
+
+.badge{
+display:inline-block;
+padding:5px 10px;
+background:#1f2937;
+border-radius:6px;
+font-size:12px;
+opacity:0.8;
 margin-bottom:15px;
+}
+
+.cta{
+display:block;
+margin:15px 0;
+padding:14px;
+background:#f59e0b;
+color:black;
+text-align:center;
+border-radius:10px;
+font-weight:bold;
+text-decoration:none;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
 }
 
 input, select{
@@ -34,70 +64,66 @@ padding:10px;
 margin:8px 0;
 border-radius:8px;
 border:none;
+background:#1f2937;
+color:white;
 }
 
 button{
 width:100%;
 padding:12px;
 margin-top:10px;
-background:#f59e0b;
+background:#22c55e;
 border:none;
 border-radius:8px;
-font-size:16px;
+font-size:15px;
 cursor:pointer;
 font-weight:bold;
-}
-
-a.buy{
-display:block;
-margin:15px 0;
-padding:12px;
-background:#f59e0b;
-color:black;
-text-align:center;
-border-radius:8px;
-font-weight:bold;
-text-decoration:none;
 }
 
 table{
 width:100%;
 margin-top:20px;
-background:#374151;
-border-radius:8px;
+background:#1f2937;
+border-radius:10px;
 overflow:hidden;
 }
 
 td,th{
 padding:10px;
-border-bottom:1px solid #555;
 text-align:center;
+border-bottom:1px solid #111827;
 }
 
 .win{ color:#22c55e; }
 .loss{ color:#ef4444; }
 
-.delete{ background:#dc2626; }
-
 small{
 opacity:0.6;
+display:block;
+margin-top:10px;
 }
 </style>
-
 </head>
 
 <body>
 
 <div class="box">
 
-<h1>📊 Trading Performance Tracker</h1>
-<p class="sub">Track your trades, win rate and profit factor instantly.</p>
+<div class="badge">📊 Trading Journal + Risk Tool</div>
 
-<a class="buy" href="https://peturp.gumroad.com/l/qsvqyf" target="_blank">
+<h1>Trade Smarter. Not Harder.</h1>
+<p class="sub">
+Track every trade, calculate risk and see if you are actually profitable.
+</p>
+
+<a class="cta" href="https://peturp.gumroad.com/l/qsvqyf" target="_blank">
 🚀 Unlock Pro Version - $9.99
 </a>
 
-<h2>Risk Calculator</h2>
+<div class="grid">
+
+<div>
+<h3>Risk Calculator</h3>
 
 <input id="account" value="1000" placeholder="Account $">
 <input id="risk" value="1" placeholder="Risk %">
@@ -108,10 +134,10 @@ opacity:0.6;
 
 <h3 id="riskResult"></h3>
 <h3 id="lotResult"></h3>
+</div>
 
-<hr>
-
-<h2>New Trade</h2>
+<div>
+<h3>New Trade</h3>
 
 <select id="type">
 <option>BUY</option>
@@ -122,8 +148,11 @@ opacity:0.6;
 <input id="exit" value="2340" placeholder="Exit">
 
 <button onclick="addTrade()">Add Trade</button>
+</div>
 
-<h2>Trade Journal</h2>
+</div>
+
+<h3>Trade Journal</h3>
 
 <table>
 <tr>
@@ -131,16 +160,16 @@ opacity:0.6;
 <th>Entry</th>
 <th>Exit</th>
 <th>Result</th>
-<th></th>
 </tr>
-
 <tbody id="journal"></tbody>
 </table>
 
 <h2 id="total"></h2>
 <h3 id="stats"></h3>
 
-<small>Pro users track consistency and improve risk management.</small>
+<small>
+Used by traders to improve discipline, risk management and consistency.
+</small>
 
 <canvas id="chart" width="700" height="250"></canvas>
 
@@ -212,8 +241,7 @@ row.innerHTML =
 "<td>"+t.type+"</td>"+
 "<td>"+t.entry+"</td>"+
 "<td>"+t.exit+"</td>"+
-"<td class='"+color+"'>"+t.result.toFixed(2)+"</td>"+
-'<td><button class="delete" onclick="removeTrade('+index+')">X</button></td>';
+"<td class='"+color+"'>"+t.result.toFixed(2)+"</td>";
 
 table.appendChild(row);
 
@@ -229,13 +257,6 @@ document.getElementById("stats").innerHTML =
 "<br>Wins: "+wins+
 "<br>Losses: "+losses+
 "<br>Win rate: "+winrate.toFixed(1)+"%";
-}
-
-function removeTrade(index){
-trades.splice(index,1);
-save();
-showTrades();
-drawChart();
 }
 
 function drawChart(){
@@ -254,22 +275,16 @@ points.push(sum);
 });
 
 ctx.strokeStyle = "#22c55e";
-ctx.lineWidth = 3;
 ctx.beginPath();
 
 points.forEach((p,i)=>{
-
-let x = i*70 + 40;
+let x = i*60 + 40;
 let y = 200 - p;
 
 if(i==0) ctx.moveTo(x,y);
 else ctx.lineTo(x,y);
 
-ctx.fillStyle = "#f59e0b";
-ctx.beginPath();
-ctx.arc(x,y,4,0,Math.PI*2);
-ctx.fill();
-
+ctx.arc(x,y,3,0,Math.PI*2);
 });
 
 ctx.stroke();
