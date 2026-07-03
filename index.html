@@ -173,10 +173,10 @@ let losses = 0;
 trades.forEach((t,index)=>{
 
 total += t.result;
-
+ 
 if(t.result > 0) wins++;
-else losses++;
-
+else if(t.result < 0) losses++;
+ 
 let color = t.result >= 0 ? "win" : "loss";
 
 let row = document.createElement("tr");
