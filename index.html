@@ -1,6 +1,9 @@
- <!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trade Smart Tracker</title>
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-E2TN42CXH9"></script>
@@ -8,120 +11,95 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-E2TN42CXH9');
 </script>
-<title>Trade Smart Tracker</title>
 
 <style>
- body{
- background:#0f172a;
-color:white;
-font-family:Arial;
+body{
+  background:#0f172a;
+  color:white;
+  font-family:Arial;
+  padding:30px;
 }
 
 .box{
-background:#111827;
-padding:25px;
-border-radius:16px;
-max-width:800px;
-margin:auto;
-}
-</style>
-
-</head>
-<body>
-
-<div class="box">
-background:#111827;
-padding:25px;
-border-radius:16px;
-max-width:800px;
-margin:auto;
-border:1px solid #1f2937;
+  background:#111827;
+  padding:25px;
+  border-radius:16px;
+  max-width:800px;
+  margin:auto;
+  border:1px solid #1f2937;
 }
 
 h1{
-font-size:28px;
-margin-bottom:5px;
+  font-size:28px;
+  margin-bottom:5px;
 }
 
 .sub{
-opacity:0.7;
-margin-bottom:20px;
+  opacity:0.7;
+  margin-bottom:20px;
 }
 
 .badge{
-display:inline-block;
-padding:5px 10px;
-background:#1f2937;
-border-radius:6px;
-font-size:12px;
-opacity:0.8;
-margin-bottom:15px;
-}
-
-.cta{
-display:block;
-margin:15px 0;
-padding:14px;
-background:#f59e0b;
-color:black;
-text-align:center;
-border-radius:10px;
-font-weight:bold;
-text-decoration:none;
+  display:inline-block;
+  padding:5px 10px;
+  background:#1f2937;
+  border-radius:6px;
+  font-size:12px;
+  opacity:0.8;
+  margin-bottom:15px;
 }
 
 .grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:15px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
 }
 
 input, select{
-width:100%;
-padding:10px;
-margin:8px 0;
-border-radius:8px;
-border:none;
-background:#1f2937;
-color:white;
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:8px;
+  border:none;
+  background:#1f2937;
+  color:white;
 }
 
 button{
-width:100%;
-padding:12px;
-margin-top:10px;
-background:#22c55e;
-border:none;
-border-radius:8px;
-font-size:15px;
-cursor:pointer;
-font-weight:bold;
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  background:#22c55e;
+  border:none;
+  border-radius:8px;
+  font-size:15px;
+  cursor:pointer;
+  font-weight:bold;
 }
 
 table{
-width:100%;
-margin-top:20px;
-background:#1f2937;
-border-radius:10px;
-overflow:hidden;
+  width:100%;
+  margin-top:20px;
+  background:#1f2937;
+  border-radius:10px;
+  overflow:hidden;
 }
 
 td,th{
-padding:10px;
-text-align:center;
-border-bottom:1px solid #111827;
+  padding:10px;
+  text-align:center;
+  border-bottom:1px solid #111827;
 }
 
 .win{ color:#22c55e; }
 .loss{ color:#ef4444; }
 
 small{
-opacity:0.6;
-display:block;
-margin-top:10px;
+  opacity:0.6;
+  display:block;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -133,34 +111,11 @@ margin-top:10px;
 <div class="badge">📊 Trading Journal + Risk Tool</div>
 
 <h1>Trade Smarter. Not Harder.</h1>
+
 <p class="sub">
-Track every trade, calculate risk and see if you are actually profitable.
+Track every trade and calculate your performance.
 </p>
 
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
- <input type="hidden" name="return" value="https://peturp444-ux.github.io/gold-trader/thankyou.html">
-  <input type="hidden" name="cmd" value="_xclick">
-  <input type="hidden" name="business" value="nikolayvdinev@gmail.com">
-  <input type="hidden" name="item_name" value="Trade Smart Tracker Pro">
-  <input type="hidden" name="amount" value="9.99">
-  <input type="hidden" name="currency_code" value="USD">
-
-  <button type="submit" style="
-    width:100%;
-    padding:14px;
-    margin-top:10px;
-    background:#0070ba;
-    border:none;
-    border-radius:10px;
-    font-size:15px;
-    cursor:pointer;
-    font-weight:bold;
-    color:white;">
-    💳 Buy with PayPal
-  </button>
-</form>
-<button onclick="unlockPro()">I Already Purchased Pro</button>
-<button onclick="clearTrades()">🗑️ Clear Journal</button>
 <div class="grid">
 
 <div>
@@ -168,13 +123,12 @@ Track every trade, calculate risk and see if you are actually profitable.
 
 <input id="account" value="1000" placeholder="Account $">
 <input id="risk" value="1" placeholder="Risk %">
+<input id="entry" value="2300" placeholder="Entry">
 <input id="stop" value="2280" placeholder="Stop Loss">
-<input id="riskEntry" value="2300" placeholder="Entry Price">
 
-<button onclick="calculateRisk()">Calculate Risk</button>
+<button onclick="calculateRisk()">Calculate</button>
 
 <h3 id="riskResult"></h3>
-<h3 id="lotResult"></h3>
 </div>
 
 <div>
@@ -185,7 +139,7 @@ Track every trade, calculate risk and see if you are actually profitable.
 <option>SELL</option>
 </select>
 
-<input id="entry" value="2300" placeholder="Entry">
+<input id="tradeEntry" value="2300" placeholder="Entry">
 <input id="exit" value="2340" placeholder="Exit">
 
 <button onclick="addTrade()">Add Trade</button>
@@ -208,162 +162,84 @@ Track every trade, calculate risk and see if you are actually profitable.
 <h2 id="total"></h2>
 <h3 id="stats"></h3>
 
-<small>
-Used by traders to improve discipline, risk management and consistency.
-</small>
-
-<canvas id="chart" width="700" height="250"></canvas>
-
 </div>
 
 <script>
 
- let trades = JSON.parse(localStorage.getItem("trades")) || [];
-let isPro = localStorage.getItem("pro") === "true";
-const FREE_LIMIT = 10;
+let trades = JSON.parse(localStorage.getItem("trades")) || [];
 
 function save(){
-    localStorage.setItem("trades", JSON.stringify(trades));
+  localStorage.setItem("trades", JSON.stringify(trades));
 }
 
 function calculateRisk(){
+  let account = Number(document.getElementById("account").value);
+  let risk = Number(document.getElementById("risk").value);
+  let stop = Number(document.getElementById("stop").value);
+  let entry = Number(document.getElementById("entry").value);
 
-    let account = Number(document.getElementById("account").value);
-    let risk = Number(document.getElementById("risk").value);
-    let stop = Number(document.getElementById("stop").value);
-    let entry = Number(document.getElementById("riskEntry").value);
+  let money = account * risk / 100;
+  let distance = Math.abs(entry - stop);
 
-    let money = account * risk / 100;
-    let distance = Math.abs(entry - stop);
-
-    document.getElementById("riskResult").innerHTML =
-    "Risk: $" + money.toFixed(2);
-
-    if(distance > 0){
-        document.getElementById("lotResult").innerHTML =
-        "Lot Size: " + (money / distance).toFixed(2);
-    }
+  document.getElementById("riskResult").innerText =
+  "Risk: $" + money.toFixed(2);
 }
 
 function addTrade(){
 
-    if(!isPro && trades.length >= FREE_LIMIT){
-        alert("Free limit reached. Unlock Pro to continue.");
-        return;
-    }
+  let type = document.getElementById("type").value;
+  let entry = Number(document.getElementById("tradeEntry").value);
+  let exit = Number(document.getElementById("exit").value);
 
-    let type = document.getElementById("type").value;
-    let entry = Number(document.getElementById("entry").value);
-    let exit = Number(document.getElementById("exit").value);
+  let result = (type === "BUY") ? (exit - entry) : (entry - exit);
 
-    let result = (type == "BUY") ? (exit - entry) : (entry - exit);
+  trades.push({type, entry, exit, result});
 
-    trades.push({
-        type,
-        entry,
-        exit,
-        result
-    });
-
-    save();
- 
-    showTrades();
-    drawChart();
+  save();
+  showTrades();
 }
 
 function showTrades(){
 
-    let table = document.getElementById("journal");
-    table.innerHTML = "";
+  let table = document.getElementById("journal");
+  table.innerHTML = "";
 
-    let total = 0;
-    let wins = 0;
-    let losses = 0;
+  let total = 0;
+  let wins = 0;
+  let losses = 0;
 
-    trades.forEach((t,index)=>{
+  trades.forEach(t => {
 
-        total += t.result;
+    total += t.result;
 
-        if(t.result > 0) wins++;
-        else losses++;
+    if(t.result > 0) wins++;
+    else losses++;
 
-        let color = t.result >= 0 ? "win" : "loss";
+    let row = document.createElement("tr");
 
-        let row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${t.type}</td>
+      <td>${t.entry}</td>
+      <td>${t.exit}</td>
+      <td class="${t.result >= 0 ? "win" : "loss"}">${t.result.toFixed(2)}</td>
+    `;
 
-        row.innerHTML =
-        "<td>"+t.type+"</td>"+
-        "<td>"+t.entry+"</td>"+
-        "<td>"+t.exit+"</td>"+
-        "<td class='"+color+"'>"+t.result.toFixed(2)+"</td>";
+    table.appendChild(row);
+  });
 
-        table.appendChild(row);
-    });
+  let winrate = trades.length ? (wins / trades.length) * 100 : 0;
 
-    let winrate = trades.length ? (wins/trades.length)*100 : 0;
+  document.getElementById("total").innerText =
+  "Total P/L: " + total.toFixed(2);
 
-    document.getElementById("total").innerHTML =
-    "Total P/L: " + total.toFixed(2);
-
-    document.getElementById("stats").innerHTML =
-    "Trades: "+trades.length+
-    "<br>Wins: "+wins+
-    "<br>Losses: "+losses+
-    "<br>Win rate: "+winrate.toFixed(1)+"%";
-}
-
-function drawChart(){
-
-    let canvas = document.getElementById("chart");
-    let ctx = canvas.getContext("2d");
-
-    ctx.clearRect(0,0,700,250);
-
-    let sum = 0;
-    let points = [];
-
-    trades.forEach(t=>{
-        sum += t.result;
-        points.push(sum);
-    });
-
-    ctx.strokeStyle = "#22c55e";
-    ctx.beginPath();
-
-    points.forEach((p,i)=>{
-        let x = i*60 + 40;
-        let y = 200 - p;
-
-        if(i==0) ctx.moveTo(x,y);
-        else ctx.lineTo(x,y);
-
-        ctx.arc(x,y,3,0,Math.PI*2);
-    });
-
-    ctx.stroke();
-}
-
-function unlockPro(){
-    let code = prompt("Enter your Pro code:");
-
-    if(code === "GOLD-2026-UNLOCK-44"){
-        localStorage.setItem("pro","true");
-        isPro = true;
-        alert("Pro unlocked successfully!");
-    } else {
-        alert("Invalid code.");
-    }
-}
-
-function clearTrades(){
-    trades = [];
-    localStorage.removeItem("trades");
-    showTrades();
-    drawChart();
+  document.getElementById("stats").innerHTML =
+  "Trades: " + trades.length +
+  "<br>Wins: " + wins +
+  "<br>Losses: " + losses +
+  "<br>Win rate: " + winrate.toFixed(1) + "%";
 }
 
 showTrades();
-drawChart();
 
 </script>
 
