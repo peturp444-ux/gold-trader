@@ -53,13 +53,8 @@ button{
   cursor:pointer;
 }
 
-button.secondary{
-  background:#3b82f6;
-}
-
-button.danger{
-  background:#ef4444;
-}
+button.secondary{background:#3b82f6;}
+button.danger{background:#ef4444;}
 
 table{
   width:100%;
@@ -84,11 +79,6 @@ canvas{
   background:#0b1220;
   border-radius:10px;
 }
-
-.locked{
-  opacity:0.4;
-  pointer-events:none;
-}
 </style>
 </head>
 
@@ -97,9 +87,9 @@ canvas{
 <div class="box">
 
 <h1>📊 Trade Smart Tracker Pro</h1>
-<p class="sub">Track trades, risk & performance like a pro</p>
+<p class="sub">Real SaaS-ready version (backend supported)</p>
 
-<button class="secondary" onclick="unlockPro()">🔓 Unlock Pro</button>
+<button class="secondary" onclick="startCheckout()">🔓 Unlock Pro</button>
 <button onclick="exportCSV()">⬇️ Export CSV</button>
 <button class="danger" onclick="clearAll()">🗑️ Clear All</button>
 
@@ -108,17 +98,17 @@ canvas{
 <div>
 <h3>Risk Calculator</h3>
 
-<input id="account" value="1000" placeholder="Account $">
-<input id="risk" value="1" placeholder="Risk %">
-<input id="entry" value="2300" placeholder="Entry">
-<input id="stop" value="2280" placeholder="Stop">
+<input id="account" value="1000">
+<input id="risk" value="1">
+<input id="entry" value="2300">
+<input id="stop" value="2280">
 
 <button onclick="calcRisk()">Calculate Risk</button>
 
 <h3 id="riskOut"></h3>
 </div>
 
-<div id="tradeBox">
+<div>
 <h3>New Trade</h3>
 
 <select id="type">
@@ -126,12 +116,12 @@ canvas{
 <option>SELL</option>
 </select>
 
-<input id="tradeEntry" value="2300" placeholder="Entry">
-<input id="exit" value="2340" placeholder="Exit">
+<input id="tradeEntry" value="2300">
+<input id="exit" value="2340">
 
 <button onclick="addTrade()">Add Trade</button>
 
-<p id="limitText" style="opacity:0.7"></p>
+<p id="status" style="opacity:0.7"></p>
 </div>
 
 </div>
@@ -157,14 +147,30 @@ canvas{
 
 <script>
 
-let trades = JSON.parse(localStorage.getItem("trades")) || [];
-let pro = localStorage.getItem("pro") === "true";
-const LIMIT = 10;
+let trades = [];
+let isPro = false;
 
-function save(){
-  localStorage.setItem("trades", JSON.stringify(trades));
+/* =======================
+   SIMULATED AUTH CHECK
+   (replace with backend later)
+======================= */
+async function checkProStatus(){
+  // HERE later: call your backend /api/user
+  return false;
 }
 
+/* =======================
+   INIT
+======================= */
+(async function(){
+  isPro = await checkProStatus();
+  render();
+  draw();
+})();
+
+/* =======================
+   RISK
+======================= */
 function calcRisk(){
   let account = +document.getElementById("account").value;
   let risk = +document.getElementById("risk").value;
@@ -175,10 +181,13 @@ function calcRisk(){
   "Risk: $" + money.toFixed(2);
 }
 
+/* =======================
+   ADD TRADE
+======================= */
 function addTrade(){
 
-  if(!pro && trades.length >= LIMIT){
-    alert("Free limit reached. Unlock Pro.");
+  if(!isPro && trades.length >= 10){
+    alert("Free limit reached. Upgrade to Pro.");
     return;
   }
 
@@ -190,11 +199,13 @@ function addTrade(){
 
   trades.push({type, entry, exit, result});
 
-  save();
   render();
   draw();
 }
 
+/* =======================
+   RENDER
+======================= */
 function render(){
 
   let t = document.getElementById("journal");
@@ -204,7 +215,7 @@ function render(){
 
   trades.forEach(x=>{
     sum += x.result;
-    x.result>0 ? w++ : l++;
+    x.result > 0 ? w++ : l++;
 
     let row = document.createElement("tr");
     row.innerHTML = `
@@ -223,6 +234,9 @@ function render(){
   `Trades: ${trades.length} | Wins: ${w} | Losses: ${l}`;
 }
 
+/* =======================
+   CHART
+======================= */
 function draw(){
 
   let c = document.getElementById("chart");
@@ -254,8 +268,10 @@ function draw(){
   ctx.stroke();
 }
 
+/* =======================
+   EXPORT
+======================= */
 function exportCSV(){
-
   let csv="type,entry,exit,result\n";
 
   trades.forEach(t=>{
@@ -271,24 +287,26 @@ function exportCSV(){
   a.click();
 }
 
+/* =======================
+   PRO UPGRADE (REAL HOOK)
+======================= */
+function startCheckout(){
+
+  // TODO: replace with Stripe Checkout link
+  // example:
+  // window.location.href = "https://buy.stripe.com/xxxxx";
+
+  alert("Next step: connect Stripe payment link");
+}
+
+/* =======================
+   CLEAR
+======================= */
 function clearAll(){
   trades=[];
-  localStorage.removeItem("trades");
   render();
   draw();
 }
-
-function unlockPro(){
-  let code = prompt("Enter code:");
-  if(code==="GOLD-2026"){
-    pro=true;
-    localStorage.setItem("pro","true");
-    alert("PRO unlocked");
-  } else alert("Wrong code");
-}
-
-render();
-draw();
 
 </script>
 
