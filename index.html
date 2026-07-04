@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trade Smart Tracker</title>
 
-<!-- Google tag (gtag.js) -->
+<!-- Google tag -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-E2TN42CXH9"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-E2TN42CXH9');
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-E2TN42CXH9');
 </script>
 
 <style>
@@ -26,30 +26,13 @@ body{
   background:#111827;
   padding:25px;
   border-radius:16px;
-  max-width:800px;
+  max-width:900px;
   margin:auto;
   border:1px solid #1f2937;
 }
 
-h1{
-  font-size:28px;
-  margin-bottom:5px;
-}
-
-.sub{
-  opacity:0.7;
-  margin-bottom:20px;
-}
-
-.badge{
-  display:inline-block;
-  padding:5px 10px;
-  background:#1f2937;
-  border-radius:6px;
-  font-size:12px;
-  opacity:0.8;
-  margin-bottom:15px;
-}
+h1{margin-bottom:5px;}
+.sub{opacity:0.7;margin-bottom:20px;}
 
 .grid{
   display:grid;
@@ -57,26 +40,21 @@ h1{
   gap:15px;
 }
 
-input, select{
+input,select,button{
   width:100%;
   padding:10px;
   margin:8px 0;
   border-radius:8px;
   border:none;
-  background:#1f2937;
-  color:white;
 }
 
+input,select{background:#1f2937;color:white;}
+
 button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
   background:#22c55e;
-  border:none;
-  border-radius:8px;
-  font-size:15px;
-  cursor:pointer;
+  color:white;
   font-weight:bold;
+  cursor:pointer;
 }
 
 table{
@@ -93,13 +71,18 @@ td,th{
   border-bottom:1px solid #111827;
 }
 
-.win{ color:#22c55e; }
-.loss{ color:#ef4444; }
+.win{color:#22c55e;}
+.loss{color:#ef4444;}
 
-small{
-  opacity:0.6;
-  display:block;
-  margin-top:10px;
+canvas{
+  margin-top:20px;
+  background:#0b1220;
+  border-radius:10px;
+}
+
+.locked{
+  opacity:0.5;
+  pointer-events:none;
 }
 </style>
 </head>
@@ -108,30 +91,28 @@ small{
 
 <div class="box">
 
-<div class="badge">📊 Trading Journal + Risk Tool</div>
+<h1>📊 Trade Smart Tracker</h1>
+<p class="sub">Track trades, risk & performance</p>
 
-<h1>Trade Smarter. Not Harder.</h1>
-
-<p class="sub">
-Track every trade and calculate your performance.
-</p>
+<button onclick="unlockPro()">🔓 Unlock Pro</button>
+<button onclick="exportCSV()">⬇️ Export CSV</button>
 
 <div class="grid">
 
 <div>
 <h3>Risk Calculator</h3>
 
-<input id="account" value="1000" placeholder="Account $">
-<input id="risk" value="1" placeholder="Risk %">
-<input id="entry" value="2300" placeholder="Entry">
-<input id="stop" value="2280" placeholder="Stop Loss">
+<input id="account" value="1000">
+<input id="risk" value="1">
+<input id="entry" value="2300">
+<input id="stop" value="2280">
 
 <button onclick="calculateRisk()">Calculate</button>
 
 <h3 id="riskResult"></h3>
 </div>
 
-<div>
+<div id="tradeBox">
 <h3>New Trade</h3>
 
 <select id="type">
@@ -139,16 +120,15 @@ Track every trade and calculate your performance.
 <option>SELL</option>
 </select>
 
-<input id="tradeEntry" value="2300" placeholder="Entry">
-<input id="exit" value="2340" placeholder="Exit">
+<input id="tradeEntry" value="2300">
+<input id="exit" value="2340">
 
 <button onclick="addTrade()">Add Trade</button>
 </div>
 
 </div>
 
-<h3>Trade Journal</h3>
-
+<h3>Journal</h3>
 <table>
 <tr>
 <th>Type</th>
@@ -159,27 +139,29 @@ Track every trade and calculate your performance.
 <tbody id="journal"></tbody>
 </table>
 
-<h2 id="total"></h2>
+<h3 id="total"></h3>
 <h3 id="stats"></h3>
+
+<canvas id="chart" width="800" height="250"></canvas>
 
 </div>
 
 <script>
 
 let trades = JSON.parse(localStorage.getItem("trades")) || [];
+let isPro = localStorage.getItem("pro") === "true";
 
 function save(){
   localStorage.setItem("trades", JSON.stringify(trades));
 }
 
 function calculateRisk(){
-  let account = Number(document.getElementById("account").value);
-  let risk = Number(document.getElementById("risk").value);
-  let stop = Number(document.getElementById("stop").value);
-  let entry = Number(document.getElementById("entry").value);
+  let account = +account.value;
+  let risk = +document.getElementById("risk").value;
+  let entry = +document.getElementById("entry").value;
+  let stop = +document.getElementById("stop").value;
 
   let money = account * risk / 100;
-  let distance = Math.abs(entry - stop);
 
   document.getElementById("riskResult").innerText =
   "Risk: $" + money.toFixed(2);
@@ -187,59 +169,110 @@ function calculateRisk(){
 
 function addTrade(){
 
-  let type = document.getElementById("type").value;
-  let entry = Number(document.getElementById("tradeEntry").value);
-  let exit = Number(document.getElementById("exit").value);
+  if(!isPro && trades.length >= 10){
+    alert("Free limit reached. Unlock Pro.");
+    return;
+  }
 
-  let result = (type === "BUY") ? (exit - entry) : (entry - exit);
+  let type = typeSelect.value;
+  let entry = +tradeEntry.value;
+  let exit = +document.getElementById("exit").value;
+
+  let result = type === "BUY" ? (exit - entry) : (entry - exit);
 
   trades.push({type, entry, exit, result});
 
   save();
-  showTrades();
+  render();
+  draw();
 }
 
-function showTrades(){
+function render(){
 
-  let table = document.getElementById("journal");
-  table.innerHTML = "";
+  let t = document.getElementById("journal");
+  t.innerHTML = "";
 
-  let total = 0;
-  let wins = 0;
-  let losses = 0;
+  let sum = 0, w = 0, l = 0;
 
-  trades.forEach(t => {
+  trades.forEach(x=>{
 
-    total += t.result;
-
-    if(t.result > 0) wins++;
-    else losses++;
+    sum += x.result;
+    x.result > 0 ? w++ : l++;
 
     let row = document.createElement("tr");
-
     row.innerHTML = `
-      <td>${t.type}</td>
-      <td>${t.entry}</td>
-      <td>${t.exit}</td>
-      <td class="${t.result >= 0 ? "win" : "loss"}">${t.result.toFixed(2)}</td>
+      <td>${x.type}</td>
+      <td>${x.entry}</td>
+      <td>${x.exit}</td>
+      <td class="${x.result>=0?'win':'loss'}">${x.result}</td>
     `;
-
-    table.appendChild(row);
+    t.appendChild(row);
   });
 
-  let winrate = trades.length ? (wins / trades.length) * 100 : 0;
-
   document.getElementById("total").innerText =
-  "Total P/L: " + total.toFixed(2);
+  "P/L: " + sum.toFixed(2);
 
   document.getElementById("stats").innerHTML =
-  "Trades: " + trades.length +
-  "<br>Wins: " + wins +
-  "<br>Losses: " + losses +
-  "<br>Win rate: " + winrate.toFixed(1) + "%";
+  `Trades: ${trades.length}<br>Wins: ${w}<br>Losses: ${l}`;
 }
 
-showTrades();
+function draw(){
+
+  let c = document.getElementById("chart");
+  let ctx = c.getContext("2d");
+
+  ctx.clearRect(0,0,800,250);
+
+  let sum = 0;
+  let pts = [];
+
+  trades.forEach(t=>{
+    sum += t.result;
+    pts.push(sum);
+  });
+
+  ctx.beginPath();
+  ctx.strokeStyle = "#22c55e";
+
+  pts.forEach((p,i)=>{
+    let x = i*60 + 40;
+    let y = 200 - p;
+
+    if(i==0) ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+
+    ctx.arc(x,y,3,0,Math.PI*2);
+  });
+
+  ctx.stroke();
+}
+
+function exportCSV(){
+  let csv = "type,entry,exit,result\n";
+  trades.forEach(t=>{
+    csv += `${t.type},${t.entry},${t.exit},${t.result}\n`;
+  });
+
+  let blob = new Blob([csv], {type:"text/csv"});
+  let url = URL.createObjectURL(blob);
+
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "trades.csv";
+  a.click();
+}
+
+function unlockPro(){
+  let code = prompt("Code:");
+  if(code === "GOLD-2026"){
+    localStorage.setItem("pro","true");
+    isPro = true;
+    alert("PRO unlocked");
+  } else alert("Wrong code");
+}
+
+render();
+draw();
 
 </script>
 
