@@ -48,7 +48,10 @@ input,select,button{
   border:none;
 }
 
-input,select{background:#1f2937;color:white;}
+input,select{
+  background:#1f2937;
+  color:white;
+}
 
 button{
   background:#22c55e;
@@ -79,11 +82,6 @@ canvas{
   background:#0b1220;
   border-radius:10px;
 }
-
-.locked{
-  opacity:0.5;
-  pointer-events:none;
-}
 </style>
 </head>
 
@@ -112,7 +110,7 @@ canvas{
 <h3 id="riskResult"></h3>
 </div>
 
-<div id="tradeBox">
+<div>
 <h3>New Trade</h3>
 
 <select id="type">
@@ -129,6 +127,7 @@ canvas{
 </div>
 
 <h3>Journal</h3>
+
 <table>
 <tr>
 <th>Type</th>
@@ -156,10 +155,8 @@ function save(){
 }
 
 function calculateRisk(){
-  let account = +account.value;
+  let account = +document.getElementById("account").value;
   let risk = +document.getElementById("risk").value;
-  let entry = +document.getElementById("entry").value;
-  let stop = +document.getElementById("stop").value;
 
   let money = account * risk / 100;
 
@@ -174,8 +171,8 @@ function addTrade(){
     return;
   }
 
-  let type = typeSelect.value;
-  let entry = +tradeEntry.value;
+  let type = document.getElementById("type").value;
+  let entry = +document.getElementById("tradeEntry").value;
   let exit = +document.getElementById("exit").value;
 
   let result = type === "BUY" ? (exit - entry) : (entry - exit);
@@ -192,19 +189,18 @@ function render(){
   let t = document.getElementById("journal");
   t.innerHTML = "";
 
-  let sum = 0, w = 0, l = 0;
+  let sum = 0, wins = 0, losses = 0;
 
   trades.forEach(x=>{
-
     sum += x.result;
-    x.result > 0 ? w++ : l++;
+    x.result > 0 ? wins++ : losses++;
 
     let row = document.createElement("tr");
     row.innerHTML = `
       <td>${x.type}</td>
       <td>${x.entry}</td>
       <td>${x.exit}</td>
-      <td class="${x.result>=0?'win':'loss'}">${x.result}</td>
+      <td class="${x.result>=0?'win':'loss'}">${x.result.toFixed(2)}</td>
     `;
     t.appendChild(row);
   });
@@ -213,7 +209,7 @@ function render(){
   "P/L: " + sum.toFixed(2);
 
   document.getElementById("stats").innerHTML =
-  `Trades: ${trades.length}<br>Wins: ${w}<br>Losses: ${l}`;
+  `Trades: ${trades.length}<br>Wins: ${wins}<br>Losses: ${losses}`;
 }
 
 function draw(){
@@ -240,8 +236,6 @@ function draw(){
 
     if(i==0) ctx.moveTo(x,y);
     else ctx.lineTo(x,y);
-
-    ctx.arc(x,y,3,0,Math.PI*2);
   });
 
   ctx.stroke();
@@ -249,6 +243,7 @@ function draw(){
 
 function exportCSV(){
   let csv = "type,entry,exit,result\n";
+
   trades.forEach(t=>{
     csv += `${t.type},${t.entry},${t.exit},${t.result}\n`;
   });
