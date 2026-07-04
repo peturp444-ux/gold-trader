@@ -341,6 +341,14 @@ function unlockPro(){
         alert("Invalid code.");
     }
 }
+
+function clearTrades(){
+    trades = [];
+    localStorage.removeItem("trades");
+    showTrades();
+    drawChart();
+}
+
 showTrades();
 drawChart();
 
