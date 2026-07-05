@@ -10,15 +10,69 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <style>
-body{background:#0b1220;color:white;font-family:Arial;padding:20px}
-.box{max-width:900px;margin:auto;background:#111827;padding:20px;border-radius:12px}
-input,button{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none}
-input{background:#1f2937;color:white}
-button{background:#22c55e;color:white;font-weight:bold;cursor:pointer}
-table{width:100%;margin-top:20px;background:#1f2937;border-radius:10px}
-td,th{padding:10px;text-align:center}
-.win{color:#22c55e}
-.loss{color:#ef4444}
+body{
+  margin:0;
+  background:#0b1220;
+  color:white;
+  font-family:Arial;
+  padding:20px;
+}
+
+.box{
+  max-width:900px;
+  margin:auto;
+  background:#111827;
+  padding:20px;
+  border-radius:12px;
+  border:1px solid #1f2937;
+}
+
+input,select,button{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:8px;
+  border:none;
+  font-size:14px;
+}
+
+input,select{
+  background:#1f2937;
+  color:white;
+}
+
+button{
+  background:#22c55e;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button.secondary{
+  background:#3b82f6;
+}
+
+table{
+  width:100%;
+  margin-top:20px;
+  background:#1f2937;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+th,td{
+  padding:10px;
+  text-align:center;
+  border-bottom:1px solid #111827;
+}
+
+.win{color:#22c55e;}
+.loss{color:#ef4444;}
+
+.small{
+  opacity:0.7;
+  font-size:13px;
+}
 </style>
 </head>
 
@@ -26,19 +80,22 @@ td,th{padding:10px;text-align:center}
 
 <div class="box">
 
-<h2>📊 Trade SaaS</h2>
+<h2>📊 Trade Smart SaaS</h2>
+<p class="small">Cloud trading journal (Firebase)</p>
 
+<!-- AUTH -->
 <div id="authBox">
-  <input id="email" placeholder="email">
-  <input id="pass" type="password" placeholder="password">
+  <input id="email" placeholder="Email">
+  <input id="pass" type="password" placeholder="Password">
+
   <button onclick="signup()">Sign Up</button>
   <button onclick="login()">Login</button>
 </div>
 
+<!-- APP -->
 <div id="app" style="display:none">
 
 <h3 id="user"></h3>
-
 <button onclick="logout()">Logout</button>
 
 <h3>New Trade</h3>
@@ -48,15 +105,22 @@ td,th{padding:10px;text-align:center}
 <option>SELL</option>
 </select>
 
-<input id="entry" placeholder="Entry">
-<input id="exit" placeholder="Exit">
+<input id="entry" placeholder="Entry price">
+<input id="exit" placeholder="Exit price">
 
-<button onclick="addTrade()">Add</button>
+<button onclick="addTrade()">Add Trade</button>
+
+<h3>Stats</h3>
+<div id="stats"></div>
+<div id="total"></div>
 
 <table>
-<thead>
-<tr><th>Type</th><th>Entry</th><th>Exit</th><th>Result</th></tr>
-</thead>
+<tr>
+<th>Type</th>
+<th>Entry</th>
+<th>Exit</th>
+<th>Result</th>
+</tr>
 <tbody id="list"></tbody>
 </table>
 
@@ -65,18 +129,19 @@ td,th{padding:10px;text-align:center}
 </div>
 
 <script>
-// 🔥 FIREBASE CONFIG (replace with yours)
+// 🔥 FIREBASE (replace with your config)
 const firebaseConfig = {
   apiKey: "YOUR_KEY",
   authDomain: "YOUR_DOMAIN",
-  projectId: "YOUR_ID"
+  projectId: "YOUR_PROJECT_ID"
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let currentUser = null;
+let user = null;
 
 // AUTH
 function signup(){
@@ -91,12 +156,12 @@ function logout(){
   auth.signOut();
 }
 
-auth.onAuthStateChanged(async user=>{
-  if(user){
-    currentUser = user;
+auth.onAuthStateChanged(async u=>{
+  if(u){
+    user = u;
     document.getElementById("authBox").style.display="none";
     document.getElementById("app").style.display="block";
-    document.getElementById("user").innerText = user.email;
+    document.getElementById("user").innerText = u.email;
     loadTrades();
   } else {
     document.getElementById("authBox").style.display="block";
@@ -104,38 +169,64 @@ auth.onAuthStateChanged(async user=>{
   }
 });
 
-// TRADES
+// ADD TRADE
 async function addTrade(){
+
+  if(!user) return;
+
+  let entry = +document.getElementById("entry").value;
+  let exit = +document.getElementById("exit").value;
+  let type = document.getElementById("type").value;
+
+  let result = type === "BUY" ? (exit - entry) : (entry - exit);
+
   await db.collection("trades").add({
-    uid: currentUser.uid,
-    type: type.value,
-    entry: +entry.value,
-    exit: +exit.value,
-    result: type.value==="BUY" ? (exit.value-entry.value) : (entry.value-exit.value),
+    uid: user.uid,
+    type,
+    entry,
+    exit,
+    result,
     time: Date.now()
   });
+
   loadTrades();
 }
 
+// LOAD TRADES
 async function loadTrades(){
+
   let snap = await db.collection("trades")
-    .where("uid","==",currentUser.uid)
+    .where("uid","==",user.uid)
     .get();
 
-  let html="";
+  let html = "";
+  let total = 0;
+  let wins = 0;
+  let losses = 0;
+
   snap.forEach(doc=>{
     let t = doc.data();
+
+    total += t.result;
+    t.result > 0 ? wins++ : losses++;
+
     html += `
       <tr>
         <td>${t.type}</td>
         <td>${t.entry}</td>
         <td>${t.exit}</td>
-        <td class="${t.result>=0?'win':'loss'}">${t.result}</td>
+        <td class="${t.result>=0?'win':'loss'}">${t.result.toFixed(2)}</td>
       </tr>
     `;
   });
 
-  list.innerHTML = html;
+  document.getElementById("list").innerHTML = html;
+
+  document.getElementById("total").innerText =
+  "Total P/L: " + total.toFixed(2);
+
+  document.getElementById("stats").innerText =
+  `Trades: ${snap.size} | Wins: ${wins} | Losses: ${losses}`;
 }
 </script>
 
