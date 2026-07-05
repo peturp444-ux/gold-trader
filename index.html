@@ -3,82 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trade Smart Tracker Pro</title>
+<title>Trade Smart SaaS</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <style>
-body{
-  margin:0;
-  background:#0b1220;
-  color:white;
-  font-family:Arial;
-  padding:20px;
-}
-
-.box{
-  max-width:1000px;
-  margin:auto;
-  background:#111827;
-  padding:20px;
-  border-radius:16px;
-  border:1px solid #1f2937;
-}
-
-h1{margin:0;}
-.sub{opacity:0.7;margin-bottom:20px;}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:15px;
-}
-
-input,select,button{
-  width:100%;
-  padding:10px;
-  margin-top:8px;
-  border-radius:8px;
-  border:none;
-  font-size:14px;
-}
-
-input,select{
-  background:#1f2937;
-  color:white;
-}
-
-button{
-  background:#22c55e;
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-button.secondary{background:#3b82f6;}
-button.danger{background:#ef4444;}
-
-table{
-  width:100%;
-  margin-top:20px;
-  background:#1f2937;
-  border-radius:10px;
-  overflow:hidden;
-}
-
-th,td{
-  padding:10px;
-  text-align:center;
-  border-bottom:1px solid #111827;
-}
-
-.win{color:#22c55e;}
-.loss{color:#ef4444;}
-
-canvas{
-  width:100%;
-  margin-top:20px;
-  background:#0b1220;
-  border-radius:10px;
-}
+body{background:#0b1220;color:white;font-family:Arial;padding:20px}
+.box{max-width:900px;margin:auto;background:#111827;padding:20px;border-radius:12px}
+input,button{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none}
+input{background:#1f2937;color:white}
+button{background:#22c55e;color:white;font-weight:bold;cursor:pointer}
+table{width:100%;margin-top:20px;background:#1f2937;border-radius:10px}
+td,th{padding:10px;text-align:center}
+.win{color:#22c55e}
+.loss{color:#ef4444}
 </style>
 </head>
 
@@ -86,29 +26,21 @@ canvas{
 
 <div class="box">
 
-<h1>📊 Trade Smart Tracker Pro</h1>
-<p class="sub">Real SaaS-ready version (backend supported)</p>
+<h2>📊 Trade SaaS</h2>
 
-<button class="secondary" onclick="startCheckout()">🔓 Unlock Pro</button>
-<button onclick="exportCSV()">⬇️ Export CSV</button>
-<button class="danger" onclick="clearAll()">🗑️ Clear All</button>
-
-<div class="grid">
-
-<div>
-<h3>Risk Calculator</h3>
-
-<input id="account" value="1000">
-<input id="risk" value="1">
-<input id="entry" value="2300">
-<input id="stop" value="2280">
-
-<button onclick="calcRisk()">Calculate Risk</button>
-
-<h3 id="riskOut"></h3>
+<div id="authBox">
+  <input id="email" placeholder="email">
+  <input id="pass" type="password" placeholder="password">
+  <button onclick="signup()">Sign Up</button>
+  <button onclick="login()">Login</button>
 </div>
 
-<div>
+<div id="app" style="display:none">
+
+<h3 id="user"></h3>
+
+<button onclick="logout()">Logout</button>
+
 <h3>New Trade</h3>
 
 <select id="type">
@@ -116,198 +48,95 @@ canvas{
 <option>SELL</option>
 </select>
 
-<input id="tradeEntry" value="2300">
-<input id="exit" value="2340">
+<input id="entry" placeholder="Entry">
+<input id="exit" placeholder="Exit">
 
-<button onclick="addTrade()">Add Trade</button>
-
-<p id="status" style="opacity:0.7"></p>
-</div>
-
-</div>
-
-<h3>Journal</h3>
+<button onclick="addTrade()">Add</button>
 
 <table>
-<tr>
-<th>Type</th>
-<th>Entry</th>
-<th>Exit</th>
-<th>Result</th>
-</tr>
-<tbody id="journal"></tbody>
+<thead>
+<tr><th>Type</th><th>Entry</th><th>Exit</th><th>Result</th></tr>
+</thead>
+<tbody id="list"></tbody>
 </table>
 
-<h2 id="total"></h2>
-<h3 id="stats"></h3>
-
-<canvas id="chart" height="250"></canvas>
+</div>
 
 </div>
 
 <script>
+// 🔥 FIREBASE CONFIG (replace with yours)
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_ID"
+};
 
-let trades = [];
-let isPro = false;
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-/* =======================
-   SIMULATED AUTH CHECK
-   (replace with backend later)
-======================= */
-async function checkProStatus(){
-  // HERE later: call your backend /api/user
-  return false;
+let currentUser = null;
+
+// AUTH
+function signup(){
+  auth.createUserWithEmailAndPassword(email.value, pass.value);
 }
 
-/* =======================
-   INIT
-======================= */
-(async function(){
-  isPro = await checkProStatus();
-  render();
-  draw();
-})();
-
-/* =======================
-   RISK
-======================= */
-function calcRisk(){
-  let account = +document.getElementById("account").value;
-  let risk = +document.getElementById("risk").value;
-
-  let money = account * risk / 100;
-
-  document.getElementById("riskOut").innerText =
-  "Risk: $" + money.toFixed(2);
+function login(){
+  auth.signInWithEmailAndPassword(email.value, pass.value);
 }
 
-/* =======================
-   ADD TRADE
-======================= */
-function addTrade(){
+function logout(){
+  auth.signOut();
+}
 
-  if(!isPro && trades.length >= 10){
-    alert("Free limit reached. Upgrade to Pro.");
-    return;
+auth.onAuthStateChanged(async user=>{
+  if(user){
+    currentUser = user;
+    document.getElementById("authBox").style.display="none";
+    document.getElementById("app").style.display="block";
+    document.getElementById("user").innerText = user.email;
+    loadTrades();
+  } else {
+    document.getElementById("authBox").style.display="block";
+    document.getElementById("app").style.display="none";
   }
+});
 
-  let type = document.getElementById("type").value;
-  let entry = +document.getElementById("tradeEntry").value;
-  let exit = +document.getElementById("exit").value;
-
-  let result = type === "BUY" ? (exit - entry) : (entry - exit);
-
-  trades.push({type, entry, exit, result});
-
-  render();
-  draw();
+// TRADES
+async function addTrade(){
+  await db.collection("trades").add({
+    uid: currentUser.uid,
+    type: type.value,
+    entry: +entry.value,
+    exit: +exit.value,
+    result: type.value==="BUY" ? (exit.value-entry.value) : (entry.value-exit.value),
+    time: Date.now()
+  });
+  loadTrades();
 }
 
-/* =======================
-   RENDER
-======================= */
-function render(){
+async function loadTrades(){
+  let snap = await db.collection("trades")
+    .where("uid","==",currentUser.uid)
+    .get();
 
-  let t = document.getElementById("journal");
-  t.innerHTML = "";
-
-  let sum=0, w=0, l=0;
-
-  trades.forEach(x=>{
-    sum += x.result;
-    x.result > 0 ? w++ : l++;
-
-    let row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${x.type}</td>
-      <td>${x.entry}</td>
-      <td>${x.exit}</td>
-      <td class="${x.result>=0?'win':'loss'}">${x.result.toFixed(2)}</td>
+  let html="";
+  snap.forEach(doc=>{
+    let t = doc.data();
+    html += `
+      <tr>
+        <td>${t.type}</td>
+        <td>${t.entry}</td>
+        <td>${t.exit}</td>
+        <td class="${t.result>=0?'win':'loss'}">${t.result}</td>
+      </tr>
     `;
-    t.appendChild(row);
   });
 
-  document.getElementById("total").innerText =
-  "P/L: " + sum.toFixed(2);
-
-  document.getElementById("stats").innerHTML =
-  `Trades: ${trades.length} | Wins: ${w} | Losses: ${l}`;
+  list.innerHTML = html;
 }
-
-/* =======================
-   CHART
-======================= */
-function draw(){
-
-  let c = document.getElementById("chart");
-  let ctx = c.getContext("2d");
-
-  ctx.clearRect(0,0,1000,250);
-
-  let sum=0;
-  let pts=[];
-
-  trades.forEach(t=>{
-    sum += t.result;
-    pts.push(sum);
-  });
-
-  ctx.beginPath();
-  ctx.strokeStyle="#22c55e";
-
-  pts.forEach((p,i)=>{
-    let x=i*50+30;
-    let y=200-p;
-
-    if(i==0) ctx.moveTo(x,y);
-    else ctx.lineTo(x,y);
-
-    ctx.arc(x,y,3,0,Math.PI*2);
-  });
-
-  ctx.stroke();
-}
-
-/* =======================
-   EXPORT
-======================= */
-function exportCSV(){
-  let csv="type,entry,exit,result\n";
-
-  trades.forEach(t=>{
-    csv+=`${t.type},${t.entry},${t.exit},${t.result}\n`;
-  });
-
-  let blob=new Blob([csv],{type:"text/csv"});
-  let url=URL.createObjectURL(blob);
-
-  let a=document.createElement("a");
-  a.href=url;
-  a.download="trades.csv";
-  a.click();
-}
-
-/* =======================
-   PRO UPGRADE (REAL HOOK)
-======================= */
-function startCheckout(){
-
-  // TODO: replace with Stripe Checkout link
-  // example:
-  // window.location.href = "https://buy.stripe.com/xxxxx";
-
-  alert("Next step: connect Stripe payment link");
-}
-
-/* =======================
-   CLEAR
-======================= */
-function clearAll(){
-  trades=[];
-  render();
-  draw();
-}
-
 </script>
 
 </body>
